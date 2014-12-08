@@ -10,11 +10,22 @@ import marshal
 import types
 
 
+if sys.version_info[0:2] >= (3, 4):
+    from importlib.util import MAGIC_NUMBER
+else:
+    import imp
+
+    MAGIC_NUMBER = imp.get_magic()
+
+
 def read_pyc(path):
     with open(path, 'rb') as fin:
         header = []
         # First four bytes of PYC is the magic number
         magic = fin.read(4)
+        if magic != MAGIC_NUMBER:
+            raise RuntimeError("Magic number in {file} does not match "
+                               "interpreter's magic number".format(file=path))
         header.append(magic)
         # The next four bytes are the modification date
         moddate = fin.read(4)
